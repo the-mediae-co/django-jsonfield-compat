@@ -20,7 +20,13 @@ def convert_column_to_json(model, column_name):
             "where table_name = %s and column_name = %s;",
             [table_name, column_name])
 
-        current_type = cursor.fetchone()[0].upper()
+        res = cursor.fetchone()
+        # if cursor.fetchone() returns None then the column (or entire table) to be converted doesn't exist in the
+        # current connection's schema.
+        if not res:
+            return
+
+        current_type = res[0].upper()
         expected_type = 'JSONB' if use_native_jsonfield() else 'TEXT'
 
         if current_type != expected_type:
